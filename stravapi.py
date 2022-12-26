@@ -217,41 +217,37 @@ def load_activities(activities):
 	date_last = ''
 	current_month = datetime.now().month
 	current_year = datetime.now().year
-	try:
-		for activity in activities:
-			tp = activity.type
-			dt = activity.start_date
-			date = str(dt)
-			if not tp == param["activity_type"]:
-				tolog("Skipping date %s as type is %s" %(date, tp))
-				continue
-			distance = float(stravalib.unithelper.kilometers(activity.distance))
-			val = int(math.ceil(distance * param["pixel_per_km"]))
+	for activity in activities:
+		tp = activity.type
+		dt = activity.start_date
+		date = str(dt)
+		if not tp == param["activity_type"]:
+			tolog("Skipping date %s as type is %s" %(date, tp))
+			continue
+		distance = float(stravalib.unithelper.kilometers(activity.distance))
+		val = int(math.ceil(distance * param["pixel_per_km"]))
 
-			if dt.year == current_year:
-				try:
-					monthly_distance[dt.month] += distance
-				except:
-					monthly_distance[dt.month] = distance
+		if dt.year == current_year:
+			try:
+				monthly_distance[dt.month] += distance
+			except:
+				monthly_distance[dt.month] = distance
 
-			if dt.month == current_month:
-				totaldistance += distance
-				totalactivity += 1
-			tolog("%s: %.1f (%s px) %s" % (date, distance, val, tp))
-			if date[:10] == date_last[:10]:
-				bargraph[-1]['val'] += val
-			else:
-				graph = {
-					'date': date,
-					'val': val
-				}
-				bargraph.append(graph)
-				date_last = date
-		tolog("...loading activity success, total distance = %s" % (totaldistance))
-		return True
-	except Exception as e:
-		tolog("...loading activity error %s" % (e))
-		return False
+		if dt.month == current_month:
+			totaldistance += distance
+			totalactivity += 1
+		tolog("%s: %.1f (%s px) %s" % (date, distance, val, tp))
+		if date[:10] == date_last[:10]:
+			bargraph[-1]['val'] += val
+		else:
+			graph = {
+				'date': date,
+				'val': val
+			}
+			bargraph.append(graph)
+			date_last = date
+	tolog("...loading activity success, total distance = %s" % (totaldistance))
+	return 
 
 
 def get_token():
@@ -266,10 +262,8 @@ def getstravabargraph():
 		client = stravalib.client.Client(access_token=access_tok)
 		activitiesthisyear = client.get_activities(after=param["start_date"], limit=500)  # Download all activities after startdate
 
-		if load_activities(activitiesthisyear):
-			return True
-		else:
-			return False
+		load_activities(activitiesthisyear)
+		return True
 	except Exception as e:
 		tolog("Strava returned error %s" % (e))
 		tolog("Regenerating refresh token...")
