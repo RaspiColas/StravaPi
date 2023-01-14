@@ -276,10 +276,8 @@ def getstravabargraph():
 			client = stravalib.client.Client(access_token=access_tok)
 			activitiesthisyear = client.get_activities(
 				after=param["start_date"], limit=500)  # Download all activities after startdate
-			if load_activities(activitiesthisyear):
-				return True
-			else:
-				return False
+			load_activities(activitiesthisyear)
+			return True
 		except Exception as e:
 			tolog("Strava returned error %s" % (e), True)
 			tolog("Cannot regenerate token, sorry")
